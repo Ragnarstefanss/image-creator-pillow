@@ -1,4 +1,4 @@
-# pillow-image-creator
+# Pillow multi image combiner
 Using pillow (the Python Imaging Library) to generate a background from N randomly picked photos in a folder
 
 Example:
