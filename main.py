@@ -5,17 +5,31 @@ import random
 import math
 
 # specify the img directory path
-images = []
-path = "data/images/"
+parent_folder = "data"
+output_location = parent_folder+"/output/"
 
-# list files in img directory
-files = os.listdir(path)
+## add here folders if you have different folders you want to use
+path_1 = parent_folder+"/images/"  # data/images
+path_2 = "D:/change-this/"
+paths = [path_1, path_2]
 
-for file in files:
-    # make sure file is an image
-    if file.endswith(('.jpg', '.png', 'jpeg')):
-        img_path = path + file
-        images.append(Image.open(img_path))
+def append_images(all_paths, image_choices=1000):
+    images = []
+    for _path in all_paths:
+        # When you have gigabytes of files to choose from then the program gets heavy quickly, 
+        # so this is a solution to only pick 1000 random photos which will then also be chosen a random sample of in the final output
+        files = []
+        for _ in range(1, image_choices):
+            files.append(random.choice(os.listdir(_path)))
+        ##
+        for file in files:
+            # make sure file is an image
+            if file.endswith(('.jpg', '.png', 'jpeg')):
+                img_path = _path + file
+                images.append(Image.open(img_path))
+    return images
+
+images = append_images(paths)
 
 
 ### Pillow code that is needed
@@ -50,46 +64,66 @@ def get_concat_tile_resize(im_list_2d, resample=Image.BICUBIC):
     return get_concat_v_multi_resize(im_list_v, resample=resample)
 
 
+def create_array_size(rows=0, columns=0):
+    temp_array_size = []
+    if (rows == 0 or columns == 0):
+        rows = int(input("Enter column size: "))
+        columns = int(input("Enter row size: "))
+    for item in range(0, columns):
+        temp_array_size.append(rows)
+    return temp_array_size
+
 ### my implementation
-def create_random_sized_array(nr_of_images=4):
-    if nr_of_images > len(images):
-        print("error occured: number of images chosen", nr_of_images, "total available images in folder", len(images))
+def create_random_sized_array():
+    r1 = random.randint(1, 6)
+    r2 = random.randint(2, 4)
+    return create_array_size(rows=r1, columns=r2)
 
-    array_size = []
-    images_left = nr_of_images
-    for items in range(images_left):
-        if images_left > 0:
-            number = random.randint(0, round(images_left))
-            if(number > 0):
-                array_size.append(number)
-                images_left -= number
 
-    if sum(array_size)==nr_of_images:
-        # if we get correct amount of images that user asked for then we return 
-        return array_size
-    else:
-        # if the array length does NOT match the amount user wanted then we need to re-run it
-        create_random_sized_array(nr_of_images)
-
-def generate_files_into_array(n_items):
+def generate_files_into_array(import_images = images, array_size=[]):
     output_array = []
-    random_sized_array = create_random_sized_array(n_items)
-    for to_be_generated in random_sized_array:
-        sample_list = random.sample(images, k=to_be_generated)
+    for to_be_generated in array_size:
+        sample_list = random.sample(import_images, k=to_be_generated)
         output_array.append(sample_list)
     return output_array
 
 
 def generate_output_file_name(number_char=15):
     ran = ''.join(random.choices(string.ascii_lowercase + string.digits, k = number_char))    
-    return str("data/output/"+ran+".jpg")
+    return str(output_location+ran+".jpg")
 
-# choose how many pictures to use
-number_of_pic_to_use = 0 ##change here, otherwise we will ask in terminal
-if(number_of_pic_to_use == 0):
-    number_of_pic_to_use = int(input("Enter how many images you want to use:"))
-output_array = generate_files_into_array(number_of_pic_to_use)
 
-# Output array to randomly named file
-get_concat_tile_resize(output_array).save(generate_output_file_name())
-print("Output file has been created under data/output")
+def ask_randomized_size_question(answer=""):
+    if(answer == ""):
+        question = input("Do you want to create a random sized array ? (type yes or no): ")
+    else:
+        #if we are running a for loop we don't want to ask again and again so this is a simple solution to that problem
+        question = answer
+    question = question.lower()
+    if question == "yes":
+        array_size = create_random_sized_array()
+    else:
+        # calls with default so the user is asked what size of array he would like it to be
+        array_size = create_array_size(0, 0)
+    return array_size
+
+
+def run_x_times(x_times=101, rows=4, columns=2, import_images=images, output_location=output_location):
+    for _ in range(1, x_times):
+        #array_size = ask_randomized_size_question(answer="yes")
+        array_size = create_array_size(rows, columns)
+        output_array = generate_files_into_array(import_images=import_images, array_size=array_size)
+        
+        # Output array to randomly named file
+        number_of_char = 15
+        ran = ''.join(random.choices(string.ascii_lowercase + string.digits, k = number_of_char))
+        generated_output_file_name = str(output_location+ran+".jpg")
+        get_concat_tile_resize(output_array).save(generated_output_file_name)
+    print("Output file has been created under ", output_location)
+
+#does not work at the moment
+def run_random_size_x_times(x_times=101, import_images=images, output_location=output_location):
+    for _ in range(1, x_times):
+        r1 = random.randint(1, 6)
+        r2 = random.randint(2, 4)
+        run_x_times(x_times=1, rows=r1, columns=r2, import_images=import_images, output_location=output_location)
