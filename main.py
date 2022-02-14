@@ -4,14 +4,8 @@ import string
 import random
 import math
 
-# specify the img directory path
-parent_folder = "data"
-output_location = parent_folder+"/output/"
-
-## add here folders if you have different folders you want to use
-path_1 = parent_folder+"/images/"  # data/images
-path_2 = "D:/change-this/"
-paths = [path_1, path_2]
+images = []
+output_location = "data/output/"
 
 def append_images(all_paths, image_choices=1000):
     images = []
@@ -28,9 +22,6 @@ def append_images(all_paths, image_choices=1000):
                 img_path = _path + file
                 images.append(Image.open(img_path))
     return images
-
-images = append_images(paths)
-
 
 ### Pillow code that is needed
 #CODE FROM python-snippets/notebook/pillow_concat.py
@@ -86,11 +77,6 @@ def generate_files_into_array(import_images = images, array_size=[]):
         sample_list = random.sample(import_images, k=to_be_generated)
         output_array.append(sample_list)
     return output_array
-
-
-def generate_output_file_name(number_char=15):
-    ran = ''.join(random.choices(string.ascii_lowercase + string.digits, k = number_char))    
-    return str(output_location+ran+".jpg")
 
 
 def ask_randomized_size_question(answer=""):
